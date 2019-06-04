@@ -271,7 +271,7 @@ script for more efficient use of resources using either `srun` yourself or with
 
 ---
 
-#### Example: multiple serial jobs in one script using srun
+#### Using srun
 
 ```bash
 #!/bin/bash
@@ -324,4 +324,88 @@ sbatch --array=1,3,8,20 myscript.slurm
 
 # Execute odd numbered cases
 sbatch --array=1,11:2 myscript.slurm 
+```
+
+### Other commands
+
+- [scancel](https://slurm.schedmd.com/scancel.html) -- Cancel jobs - step, array
+  ID etc.
+  
+- [scontrol](https://slurm.schedmd.com/scontrol.html) -- View or modify the
+  state of jobs on the queue.
+  
+  **Example**
+  
+  ```bash
+  # Show job details (working directory, command etc.)
+  scontrol show job 804555
+  
+  # Hold job 
+  scontrol hold 804555
+  
+  # Resume job
+  scontrol resume 804555
+  ```
+
+- [sacct](https://slurm.schedmd.com/sacct.html) - Display accounting information
+
+- `hours_report` -- NREL HPC provided command to track usage for your various allocations
+
+# Client/Server connections
+
+## Paraview reverse connection
+
+Run [Paraview](https://www.paraview.org) in parallel on compute nodes and
+interact with it from a local paraview instance to process large datasets. See
+[pvconnect.sh](https://github.com/sayerhs/).
+
+**Steps on Eagle**
+
+```bash
+# Obtain the necessary compute resources (1 node with 36 MPI ranks)
+salloc -N 1 -t 12:00:00 -A hfm --exclusive
+
+# Load the necessary module for Paraview
+module use /nopt/nrel/ecom/hpacf/software/modules/gcc-7.3.0
+module load paraview
+
+# Suppress MPICH warnings
+export MXM_LOG_LEVEL=error
+
+# Determine remote server or set IP yourself
+local ssh_ip="${SSH_CONNECTION%% *}"
+export PV_REMOTE_CLIENT="${PV_REMOTE_CLIENT:-${ssh_ip}}"
+
+srun -n 36 --cpu-bind=cores pvserver -rc --force-offscreen-rendering --client-host={$PV_REMOTE_CLIENT}
+```
+
+**Steps on your laptop**
+
+- Open Paraview 
+
+- One time setup: Click on `connect` icon; **Add server**; choose `Client /
+  Server (reverse connection)`; choose name and save.
+  
+- Select server option and click `connect`
+
+## Connecting to remote Jupyter notebook
+
+```bash
+# Launch notebook server on DAV or compute node
+eagle$ jupyter notebook --no-browser
+[C 09:41:10.012 NotebookApp]
+
+    To access the notebook, open this file in a browser:
+        file:///run/user/122774/jupyter/nbserver-16170-open.html
+    Or copy and paste one of these URLs:
+        http://localhost:8888/?token=ff327124313e9fdf1d66bffc64a0f155a64947f44b86aeda
+        
+# Determine remote server or set IP yourself
+local ssh_ip="${SSH_CONNECTION%% *}"
+export PV_REMOTE_CLIENT="${PV_REMOTE_CLIENT:-${ssh_ip}}"
+
+# Reverse port forwarding
+ssh -fNT -R 8888:localhost:8888 ${PV_REMOTE_CLIENT}
+
+# From your local laptop's browser open the URL displayed above
 ```
