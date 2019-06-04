@@ -2,10 +2,13 @@
 **Table of Contents**
 
 - [Introduction](#introduction)
-- [SLURM -- Job submission and management](#slurm----job-submission-and-management)
-    - [Command overview](#command-overview)
-        - [List free/allocated nodes](#list-freeallocated-nodes)
-        - [List jobs on queue](#list-jobs-on-queue)
+- [SLURM -- Job management](#slurm----job-management)
+    - [Getting information about queues and jobs](#getting-information-about-queues-and-jobs)
+        - [sinfo - List free/allocated nodes](#sinfo---list-freeallocated-nodes)
+        - [squeue - List jobs on queue](#squeue---list-jobs-on-queue)
+    - [Job submission](#job-submission)
+        - [Batch submissions](#batch-submissions)
+        - [Job dependencies](#job-dependencies)
 
 <!-- markdown-toc end -->
 
