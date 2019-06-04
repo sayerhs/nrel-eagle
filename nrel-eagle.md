@@ -216,8 +216,7 @@ batch scripts.
 #SBATCH --mail-type=NONE #BEGIN,END,FAIL
 
 #### Initialize environment
-module purge
-source /projects/hfm/shreyas/exawind/scripts/exawind-env-gcc.sh
+hpacf_modules
 
 #### Setup MPI run settings
 ranks_per_node=36
@@ -238,7 +237,9 @@ srun -n ${mpi_ranks} -c ${OMP_NUM_THREADS} --cpu-bind=cores ${nalu_exec} -i nrel
 ```
 
 For more details on dealing with multi-core architectures refer to [Slurm
-multi-core](https://slurm.schedmd.com/mc_support.html)
+multi-core](https://slurm.schedmd.com/mc_support.html). See
+[bash_utils.sh](https://github.com/sayerhs/nrel-eagle/blob/master/bash_utils.sh)
+for utility functions (e.g., `hpacf_modules`).
 
 **Example**
 
