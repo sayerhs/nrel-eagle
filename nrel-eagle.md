@@ -427,37 +427,32 @@ Host *
     UseKeychain yes
     AddKeysToAgent yes
     ForwardAgent yes
+    
+Host eagle
+    Hostname eagle.hpc.nrel.gov
 
 Host el1
-    User sanantha
     HostName el1.hpc.nrel.gov
 
 Host el2
-    User sanantha
     HostName el2.hpc.nrel.gov
 
 Host el3
-    User sanantha
     HostName el3.hpc.nrel.gov
 
 Host el4
-    User sanantha
     HostName el4.hpc.nrel.gov
 
 Host ed1
-    User sanantha
     Hostname ed1.hpc.nrel.gov
 
 Host ed2
-    User sanantha
     Hostname ed2.hpc.nrel.gov
 
 Host ed3
-    User sanantha
     Hostname ed3.hpc.nrel.gov
 
 Host ed4
-    User sanantha
     Hostname ed4.hpc.nrel.gov
 ```
 
