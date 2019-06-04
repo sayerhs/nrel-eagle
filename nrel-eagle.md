@@ -9,6 +9,9 @@
     - [Job submission](#job-submission)
         - [Batch submissions](#batch-submissions)
         - [Job dependencies](#job-dependencies)
+        - [Multiple serial jobs in one batch script](#multiple-serial-jobs-in-one-batch-script)
+            - [Example: multiple serial jobs in one script using srun](#example-multiple-serial-jobs-in-one-script-using-srun)
+            - [Using job arrays](#using-job-arrays)
 
 <!-- markdown-toc end -->
 
@@ -174,6 +177,8 @@ Three commands: [srun](https://slurm.schedmd.com/srun.html),
   - Use `srun` instead of `mpiexec` or `mpirun`, SLURM will automatically invoke
     the right MPI regardless of whether the executable is compiled with OpenMPI,
     MPICH or Intel MPI.
+    
+---
 
 ### Batch submissions
 
@@ -213,7 +218,7 @@ echo "Num. threads   = $OMP_NUM_THREADS"
 echo "Working dir    = $PWD"
 
 srun -n ${mpi_ranks} -c ${OMP_NUM_THREADS} --cpu-bind=cores ${nalu_exec} -i nrel5mw04.yaml -o nrel5mw04.log
-``**
+```
 
 **Example**
 
@@ -224,6 +229,8 @@ eagle$ sbatch nrel5mw.slurm
 # Override options at command line
 eagle$ sbatch -A mmc -N 40 nrel5mw.slurm
 ```
+
+---
 
 ### Job dependencies 
 
@@ -242,7 +249,7 @@ formats
   
 - `singleton` - Start execution after any previous jobs sharing the same job
   name and user have terminated. Easier than having to figure out the JOBID with
-  `-d afterany:job_id**
+  `-d afterany:job_id`
   
 **Example**
 
@@ -252,4 +259,69 @@ sbatch -d afterany:804517 fsi_defl_9mps.slurm
 
 # Using singleton to automatically restart when the current job exits
 sbatch -d singleton fsi_defl_9mps.slurm
+```
+
+### Multiple serial jobs in one batch script
+
+Eagle/SLURM does not allow sharing nodes with jobs, this means that for a serial
+job the remaining 35 cores are idle while the job is executing. If you are
+performing parameteric runs with a lot of serial jobs, *pack* jobs into the same
+script for more efficient use of resources using either `srun` yourself or with
+*job arrays**.
+
+---
+
+#### Example: multiple serial jobs in one script using srun
+
+```bash
+#!/bin/bash
+
+#### SLURM options
+#SBATCH --job-name=nrel5mw
+#SBATCH --account=hfm
+#SBATCH --nodes=1
+#SBATCH --time=48:00:00
+#SBATCH --output=%x_%j.slurm
+
+for i in $(seq 5 10) ; do
+    cd wspd_%{i}
+    srun -n 1 -c 1 --exclusive ./myexecutable &
+done
+
+wait
+```
+
+- Use `--exclusive` to ensure that each job is running on a separate core 
+- Use `&` to background the job with `srun** and `wait** to wait for all jobs to
+  complete execution.
+- Can run up to 36 serial jobs on one node, request more nodes and can execute
+  the entire parametric run within one job submission script.
+
+---
+
+#### Using job arrays
+
+```bash
+#!/bin/bash
+
+#### SLURM options
+#SBATCH --job-name=nrel5mw
+#SBATCH --account=hfm
+#SBATCH --array=1-50
+#SBATCH --ntasks=1
+#SBATCH --time=48:00:00
+#SBATCH --output=%x_%A_%a.slurm
+
+# Pass a unique ID to launch the appropriate case
+./my_python_script.py ${SLURM_ARRAY_TASK_ID}
+```
+
+**Example**
+
+```bash
+# Execute only specific cases
+sbatch --array=1,3,8,20 myscript.slurm
+
+# Execute odd numbered cases
+sbatch --array=1,11:2 myscript.slurm 
 ```
