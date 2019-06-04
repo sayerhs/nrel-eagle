@@ -10,8 +10,15 @@
         - [Batch submissions](#batch-submissions)
         - [Job dependencies](#job-dependencies)
         - [Multiple serial jobs in one batch script](#multiple-serial-jobs-in-one-batch-script)
-            - [Example: multiple serial jobs in one script using srun](#example-multiple-serial-jobs-in-one-script-using-srun)
+            - [Using srun](#using-srun)
             - [Using job arrays](#using-job-arrays)
+        - [Other commands](#other-commands)
+- [Client/Server connections](#clientserver-connections)
+    - [Paraview reverse connection](#paraview-reverse-connection)
+    - [Connecting to remote Jupyter notebook](#connecting-to-remote-jupyter-notebook)
+- [Remote connection tips](#remote-connection-tips)
+    - [SSH config](#ssh-config)
+    - [Session management -- tmux/screen](#session-management----tmuxscreen)
 
 <!-- markdown-toc end -->
 
@@ -25,6 +32,7 @@ on the system.
 - [Quick start user guide](https://slurm.schedmd.com/quickstart.html)
 - [Cheatsheet (PDF)](https://slurm.schedmd.com/pdfs/summary.pdf)
 - [Detailed manual pages](https://slurm.schedmd.com/man_index.html)
+- [Rosetta stone](https://slurm.schedmd.com/rosetta.html)
 
 ## Getting information about queues and jobs
 
@@ -292,7 +300,7 @@ wait
 ```
 
 - Use `--exclusive` to ensure that each job is running on a separate core 
-- Use `&` to background the job with `srun** and `wait** to wait for all jobs to
+- Use `&` to background the job with `srun` and `wait` to wait for all jobs to
   complete execution.
 - Can run up to 36 serial jobs on one node, request more nodes and can execute
   the entire parametric run within one job submission script.
@@ -357,13 +365,13 @@ sbatch --array=1,11:2 myscript.slurm
 
 Run [Paraview](https://www.paraview.org) in parallel on compute nodes and
 interact with it from a local paraview instance to process large datasets. See
-[pvconnect.sh](https://github.com/sayerhs/).
+[pvconnect.sh](https://github.com/sayerhs/nrel-eagle/blob/master/pvconnect.sh).
 
 **Steps on Eagle**
 
 ```bash
-# Obtain the necessary compute resources (1 node with 36 MPI ranks)
-salloc -N 1 -t 12:00:00 -A hfm --exclusive
+# Obtain the necessary compute resources (2 node for 72 MPI ranks)
+salloc -N 2 -t 12:00:00 -A hfm --exclusive
 
 # Load the necessary module for Paraview
 module use /nopt/nrel/ecom/hpacf/software/modules/gcc-7.3.0
@@ -376,7 +384,7 @@ export MXM_LOG_LEVEL=error
 local ssh_ip="${SSH_CONNECTION%% *}"
 export PV_REMOTE_CLIENT="${PV_REMOTE_CLIENT:-${ssh_ip}}"
 
-srun -n 36 --cpu-bind=cores pvserver -rc --force-offscreen-rendering --client-host={$PV_REMOTE_CLIENT}
+srun -n 72 --cpu-bind=cores pvserver -rc --force-offscreen-rendering --client-host={$PV_REMOTE_CLIENT}
 ```
 
 **Steps on your laptop**
@@ -392,7 +400,7 @@ srun -n 36 --cpu-bind=cores pvserver -rc --force-offscreen-rendering --client-ho
 
 ```bash
 # Launch notebook server on DAV or compute node
-eagle$ jupyter notebook --no-browser
+jupyter notebook --no-browser
 [C 09:41:10.012 NotebookApp]
 
     To access the notebook, open this file in a browser:
@@ -409,3 +417,90 @@ ssh -fNT -R 8888:localhost:8888 ${PV_REMOTE_CLIENT}
 
 # From your local laptop's browser open the URL displayed above
 ```
+
+# Remote connection tips
+
+## SSH config
+
+```
+Host *
+    UseKeychain yes
+    AddKeysToAgent yes
+    ForwardAgent yes
+
+Host el1
+    User sanantha
+    HostName el1.hpc.nrel.gov
+
+Host el2
+    User sanantha
+    HostName el2.hpc.nrel.gov
+
+Host el3
+    User sanantha
+    HostName el3.hpc.nrel.gov
+
+Host el4
+    User sanantha
+    HostName el4.hpc.nrel.gov
+
+Host ed1
+    User sanantha
+    Hostname ed1.hpc.nrel.gov
+
+Host ed2
+    User sanantha
+    Hostname ed2.hpc.nrel.gov
+
+Host ed3
+    User sanantha
+    Hostname ed3.hpc.nrel.gov
+
+Host ed4
+    User sanantha
+    Hostname ed4.hpc.nrel.gov
+```
+
+- Use `passphrase` with SSH keys, use `ssh-agent` to manage passphrase that can
+  be transferred to `eagle` during login.
+  
+- Create aliases for systems that can be used with `ssh` and `scp` commands.
+
+  **Example**
+  
+  ```
+  scp localfile.txt el2:~/remote_dir/remotefile.txt
+  
+  scp el2:~/remote_dir/remotefile2.txt .
+  ```
+  
+## Session management -- tmux/screen
+
+- Use [tmux](https://github.com/tmux/tmux) or
+  [screen](https://www.gnu.org/software/screen/) for persistent sessions.
+
+  ```
+  # Load necessary module
+  module use /nopt/nrel/ecom/hpacf/utilities/modules
+  module load tmux 
+  
+  # Create or attach to a session named `hfm`
+  tmux -u new -A -s hfm 
+  
+  # When using iTerm2 on OS X
+  tmux -u -CC new -A -s hfm
+  ```
+  
+- Suggested options in `~/.tmux.conf`
+
+  ```
+  # Update environment on SSH reconnects (for ssh-agent)
+  set -g update-environment "DISPLAY SSH_AUTH_SOCK SSH_CONNECTION SSH_CLIENT"
+  
+  # Set terminal if not detected automatically
+  set -g default-terminal "screen-256color"
+  ```
+  
+  
+
+
