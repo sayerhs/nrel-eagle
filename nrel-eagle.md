@@ -192,6 +192,9 @@ Three commands: [srun](https://slurm.schedmd.com/srun.html),
     the right MPI regardless of whether the executable is compiled with OpenMPI,
     MPICH or Intel MPI.
     
+  - See [Slurm FAQ entry](https://slurm.schedmd.com/faq.html#sbatch_srun) for
+    differences in behavior with `sbatch` and `srun`.
+    
 ---
 
 ### Batch submissions
@@ -233,6 +236,9 @@ echo "Working dir    = $PWD"
 
 srun -n ${mpi_ranks} -c ${OMP_NUM_THREADS} --cpu-bind=cores ${nalu_exec} -i nrel5mw04.yaml -o nrel5mw04.log
 ```
+
+For more details on dealing with multi-core architectures refer to [Slurm
+multi-core](https://slurm.schedmd.com/mc_support.html)
 
 **Example**
 
@@ -339,6 +345,8 @@ sbatch --array=1,3,8,20 myscript.slurm
 # Execute odd numbered cases
 sbatch --array=1,11:2 myscript.slurm 
 ```
+
+See [Slurm docs](https://slurm.schedmd.com/job_array.html) for more details.
 
 ### Other commands
 
