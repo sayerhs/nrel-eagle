@@ -36,6 +36,14 @@ hpacf_modules ()
 
 # ijob - Get an interactive job
 #
+# With no arguments, get one node for 4 hours on standard queue.
+#
+# Get a node with GPU
+#     ijob -g
+#
+# Get 10 nodes for 1 hour
+#     ijob -N 10 -t 01:00:00
+#
 ijob ()
 {
     local nodes=1
@@ -45,19 +53,19 @@ ijob ()
     local account=hfm
 
     OPTIND=1
-    while getopts ":n:q:w:gh" opt; do
+    while getopts ":N:q:t:gh" opt; do
         case "$opt" in
             h|\?)
-                echo "Usage: ijob [-n nodes] [-w walltime] [-q queue] [-g] [-- other_opts]"
+                echo "Usage: ijob [-N nodes] [-t walltime] [-q queue] [-g] [-- other_opts]"
                 return
                 ;;
-            n)
+            N)
                 nodes=$OPTARG
                 ;;
             q)
                 queue="-p $OPTARG"
                 ;;
-            w)
+            t)
                 walltime=$OPTARG
                 ;;
             g)
@@ -74,6 +82,8 @@ ijob ()
 }
 
 # job_script - Output a skeleton job script
+#
+# Usage: job_script <output_file_name>
 #
 job_script ()
 {
@@ -107,6 +117,8 @@ echo "Working dir    = $PWD"
 
 srun -n ${mpi_ranks} -c ${OMP_NUM_THREADS} --cpu-bind=cores COMMAND
 EOF
+
+    echo "==> Created job script: ${outfile}"
 }
 
 
