@@ -287,7 +287,7 @@ Eagle/SLURM does not allow sharing nodes with jobs, this means that for a serial
 job the remaining 35 cores are idle while the job is executing. If you are
 performing parameteric runs with a lot of serial jobs, *pack* jobs into the same
 script for more efficient use of resources using either `srun` yourself or with
-*job arrays**.
+[Using job arrays](#using-job-arrays).
 
 ---
 
