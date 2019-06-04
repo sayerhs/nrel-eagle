@@ -2,7 +2,7 @@
 **Table of Contents**
 
 - [Introduction](#introduction)
-- [SLURM -- Job management](#slurm----job-management)
+- [Slurm -- Job management](#slurm----job-management)
     - [Getting information about queues and jobs](#getting-information-about-queues-and-jobs)
         - [sinfo - List free/allocated nodes](#sinfo---list-freeallocated-nodes)
         - [squeue - List jobs on queue](#squeue---list-jobs-on-queue)
@@ -24,15 +24,21 @@
 
 # Introduction
 
-# SLURM -- Job management 
+Resources
 
-Eagle uses [SLURM](https://slurm.schedmd.com) for scheduling and managing jobs
+- [NREL HPC Eagle documentation](https://www.nrel.gov/hpc/eagle-system.html)
+- [NREL HPC Eagle workshop presentations](https://github.com/NREL/HPC/blob/master/workshops/README.md)
+
+# Slurm -- Job management 
+
+Eagle uses [Slurm](https://slurm.schedmd.com) for scheduling and managing jobs
 on the system. 
 
 - [Quick start user guide](https://slurm.schedmd.com/quickstart.html)
 - [Cheatsheet (PDF)](https://slurm.schedmd.com/pdfs/summary.pdf)
 - [Detailed manual pages](https://slurm.schedmd.com/man_index.html)
 - [Rosetta stone](https://slurm.schedmd.com/rosetta.html)
+- [NREL "Slurm: Advanced Topics" presentation](https://www.nrel.gov/hpc/assets/pdfs/slurm-advanced-topics.pdf)
 
 ## Getting information about queues and jobs
 
