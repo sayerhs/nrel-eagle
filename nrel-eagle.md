@@ -11,7 +11,7 @@
 
 # Introduction
 
-# SLURM -- Job submission and management 
+# SLURM -- Job management 
 
 Eagle uses [SLURM](https://slurm.schedmd.com) for scheduling and managing jobs
 on the system. 
@@ -20,9 +20,9 @@ on the system.
 - [Cheatsheet (PDF)](https://slurm.schedmd.com/pdfs/summary.pdf)
 - [Detailed manual pages](https://slurm.schedmd.com/man_index.html)
 
-## Command overview
+## Getting information about queues and jobs
 
-### List free/allocated nodes
+### sinfo - List free/allocated nodes
 
 Use [sinfo](https://slurm.schedmd.com/sinfo.html) to list nodes and partition
 information. You can pass a formatting string to summarize the information.
@@ -44,7 +44,7 @@ debug                       up    1-00:00:00         1/12/0/13
 Alternate format showing *generic resources* available on the queues. 
 
 ```bash
-eagle$ $ sinfo -o '%24P %.5a  %.12l  %.16F %G'
+eagle$ sinfo -o '%24P %.5a  %.12l  %.16F %G'
 PARTITION                AVAIL     TIMELIMIT    NODES(A/I/O/T) GRES
 short                       up       4:00:00   1424/616/9/2049 (null)
 short                       up       4:00:00         0/32/0/32 gpu:v100:2
@@ -94,7 +94,9 @@ debug                       up    1-00:00:00           1/0/0/1 allocated$
 debug                       up    1-00:00:00         0/12/0/12 maint
 ```
 
-### List jobs on queue
+---
+
+### squeue - List jobs on queue
 
 Use [squeue](https://slurm.schedmd.com/squeue.html) to list jobs on the queue.
 Use `-u ${USER}` to list a particular user's jobs. 
@@ -126,7 +128,7 @@ eagle$ squeue -u gvijayak
 Pass formatting string to tailor output based on your preference.
 
 ```bash
-eagle$ $ squeue -u gvijayak -o '%12i %20j %.6D %.2t %.10M %.9P %r'
+eagle$ squeue -u gvijayak -o '%12i %20j %.6D %.2t %.10M %.9P %r'
 JOBID        NAME                  NODES ST       TIME PARTITION REASON
 806661       actline_noctrl_13mps     40  R    5:54:42  standard None
 806674       fsi_noctrl_8mps          30  R    5:54:42  standard None
@@ -149,3 +151,102 @@ JOBID        NAME                  NODES ST       TIME PARTITION REASON
 804495       fsi_defl_6mps            30  R 2-12:36:19      long None
 ```
 
+
+## Job submission 
+
+Three commands: [srun](https://slurm.schedmd.com/srun.html),
+[sbatch](https://slurm.schedmd.com/sbatch.html), and
+[salloc](https://slurm.schedmd.com/salloc.html).
+
+- **salloc**: Obtain necessary resources and run a command specified by the user. 
+
+- **sbatch**: Like `salloc`, but run a batch script instead of a command. The
+  script specified can contain `#SBATCH` options to control the job. The
+  `#SBATCH` options can be overridden by options specified in the command line.
+  
+- **srun**: Behaves like `salloc` when executed outside of an allocation. Within
+  an allocation starts a *job step* which can use all the available resources or
+  a subset of resources.
+  
+  - Use `srun` instead of `mpiexec` or `mpirun`, SLURM will automatically invoke
+    the right MPI regardless of whether the executable is compiled with OpenMPI,
+    MPICH or Intel MPI.
+
+### Batch submissions
+
+See [NREL Eagle
+website](https://www.nrel.gov/hpc/eagle-sample-batch-script.html) for sample
+batch scripts.
+
+```bash
+#!/bin/bash
+
+#### SLURM options
+#SBATCH --job-name=nrel5mw_w080
+#SBATCH --account=hfm
+#SBATCH --nodes=30
+#SBATCH --time=48:00:00
+#SBATCH --output=%x_%j.slurm
+#SBATCH --mail-user=username@nrel.gov
+#SBATCH --mail-type=NONE #BEGIN,END,FAIL
+
+#### Initialize environment
+module purge
+source /projects/hfm/shreyas/exawind/scripts/exawind-env-gcc.sh
+
+#### Setup MPI run settings
+ranks_per_node=36
+mpi_ranks=$(expr $SLURM_JOB_NUM_NODES \* $ranks_per_node)
+export OMP_NUM_THREADS=1
+export OMP_PLACES=threads
+export OMP_PROC_BIND=spread
+
+nalu_exec=/projects/hfm/shreyas/exawind/install/gcc/nalu-wind/bin/naluX
+
+echo "Job name       = $SLURM_JOB_NAME"
+echo "Num. nodes     = $SLURM_JOB_NUM_NODES"
+echo "Num. MPI Ranks = $mpi_ranks"
+echo "Num. threads   = $OMP_NUM_THREADS"
+echo "Working dir    = $PWD"
+
+srun -n ${mpi_ranks} -c ${OMP_NUM_THREADS} --cpu-bind=cores ${nalu_exec} -i nrel5mw04.yaml -o nrel5mw04.log
+``**
+
+**Example**
+
+```bash
+# Submit job with defaults
+eagle$ sbatch nrel5mw.slurm
+
+# Override options at command line
+eagle$ sbatch -A mmc -N 40 nrel5mw.slurm
+```
+
+### Job dependencies 
+
+Use job dependencies to *chain jobs* based on the status of a previous job or
+jobs. Useful for codes with restart on `short` or `standard` queues. For
+example, set `startTime` to `latestTime` in `OpenFOAM` and submit the same job
+several times to the standard queue with dependencies if it requires more than
+48 hours to complete.
+
+See [sbatch](https://slurm.schedmd.com/sbatch.html) manpage for all options. Two
+formats
+
+- `<condition>:job_id[:job_id]` - Execute this job if the condition succeeds for
+  the `job_id`(s) listed. Example conditions: `after`, `afterany`, `afterok`,
+  `afternotok`.
+  
+- `singleton` - Start execution after any previous jobs sharing the same job
+  name and user have terminated. Easier than having to figure out the JOBID with
+  `-d afterany:job_id**
+  
+**Example**
+
+```bash
+# Specify exact job ID
+sbatch -d afterany:804517 fsi_defl_9mps.slurm
+
+# Using singleton to automatically restart when the current job exits
+sbatch -d singleton fsi_defl_9mps.slurm
+```
