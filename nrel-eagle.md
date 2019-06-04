@@ -424,6 +424,17 @@ ssh -fNT -R 8888:localhost:8888 ${PV_REMOTE_CLIENT}
 # From your local laptop's browser open the URL displayed above
 ```
 
+Parallelizing within Python
+
+- [multiprocessing](https://docs.python.org/3/library/multiprocessing.html)
+- [Numba](https://numba.pydata.org) - Use threading, SIMD, and/or GPUs
+- [Parallel IPython](https://ipyparallel.readthedocs.io/en/latest/)
+- [mpi4py](https://ipyparallel.readthedocs.io/en/latest/)
+- Machine learning/deep learning packages
+  - [PyTorch](https://pytorch.org)
+  - [Keras](https://keras.io)
+  - [TensorFlow](https://www.tensorflow.org)
+
 # Remote connection tips
 
 ## SSH config
