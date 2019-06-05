@@ -18,7 +18,7 @@
     - [Connecting to remote Jupyter notebook](#connecting-to-remote-jupyter-notebook)
 - [Remote connection tips](#remote-connection-tips)
     - [SSH config](#ssh-config)
-        - [SSH tunneling](#ssh-tunneling)
+    - [SSH tunneling](#ssh-tunneling)
     - [Session management -- tmux/screen](#session-management----tmuxscreen)
 
 <!-- markdown-toc end -->
