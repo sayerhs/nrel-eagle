@@ -394,7 +394,7 @@ interact with it from a local paraview instance to process large datasets. See
 salloc -N 2 -t 12:00:00 -A hfm --exclusive
 
 # Load the necessary module for Paraview
-module use /nopt/nrel/ecom/hpacf/software/modules/gcc-7.3.0
+module use /nopt/nrel/ecom/hpacf/software/modules/gcc-7.4.0
 module load paraview
 
 # Suppress MPICH warnings
