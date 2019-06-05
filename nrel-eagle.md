@@ -20,6 +20,7 @@
     - [SSH config](#ssh-config)
     - [SSH tunneling](#ssh-tunneling)
     - [Session management -- tmux/screen](#session-management----tmuxscreen)
+- [File/Directory permissions](#filedirectory-permissions)
 
 <!-- markdown-toc end -->
 
@@ -614,3 +615,27 @@ ssh -p 8022 localhost # Login to NERSC Cori
     # Start window numbering from 1 instead of 0, so that <prefix>-1 jumps to first window 
     set -g base-index 1
     ```
+
+# File/Directory permissions
+
+- Basic commands `chmod`, `chgrp` etc.
+
+  ```bash
+  # Read-execute permissions for all
+  chmod a+rx <file>
+  
+  # read for files/directories, but set execute bit for directories recursively
+  chmod -R go+rX <directory>
+  ```
+
+- Use `setfacl`/`getfacl` for more fine-grained control. Useful to restrict NDA
+  material with a subset of the groups in `/projects` directory.
+  
+  ```bash
+  # Allow read/execute access for a specific user
+  setfacl -m u:gvijayak:rx <directory>
+  
+  # Show current permissions for <path>
+  getfacl <path>
+  ```
+
