@@ -512,7 +512,7 @@ ssh -L 8890:localhost:8890 ed1
 
 *Forward port 8890 on local machine to port 8890 on `ed1` (`localhost`).* After
 successful connection, requests on port 8890 on local machine will behave as if
-you executed them on DAV node (via FastX for example**.
+you executed them on DAV node (via FastX for example).
 
 Another example:
 
