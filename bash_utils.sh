@@ -18,11 +18,6 @@ hpacf_modules ()
     local moddate=${2:-modules}
     local hpacf_modules_dir=/nopt/nrel/ecom/hpacf
 
-    local compiler_arg=gcc-7.4.0
-    if [ "${compiler}" = "intel" ] ; then
-        compiler_arg=intel-18.0.4
-    fi
-
     # Remove existing modules
     module purge
 
@@ -34,9 +29,9 @@ hpacf_modules ()
     # Load HPACF modules
     module use ${hpacf_modules_dir}/compilers/${moddate}
     module use ${hpacf_modules_dir}/utilities/${moddate}
-    module use ${hpacf_modules_dir}/software/${moddate}/${compiler_arg}
+    module use ${hpacf_modules_dir}/software/${moddate}/${compiler}*
 
-    echo "==> Using modules: $(readlink -f ${hpacf_modules_dir}/software/${moddate}/${compiler_arg})"
+    echo "==> Using modules: $(readlink -f ${hpacf_modules_dir}/software/${moddate}/${compiler})"
 }
 
 # ijob - Get an interactive job
