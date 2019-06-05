@@ -18,6 +18,7 @@
     - [Connecting to remote Jupyter notebook](#connecting-to-remote-jupyter-notebook)
 - [Remote connection tips](#remote-connection-tips)
     - [SSH config](#ssh-config)
+        - [SSH tunneling](#ssh-tunneling)
     - [Session management -- tmux/screen](#session-management----tmuxscreen)
 
 <!-- markdown-toc end -->
@@ -413,6 +414,9 @@ srun -n 72 --cpu-bind=cores pvserver -rc --force-offscreen-rendering --client-ho
 
 ## Connecting to remote Jupyter notebook
 
+The key here is [SSH tunneling](#ssh-tunneling) to allow access to the notebook
+on Eagle from local browser.
+
 ```bash
 # Launch notebook server on DAV or compute node
 jupyter notebook --no-browser
@@ -495,6 +499,58 @@ Host ed4
   scp el2:~/remote_dir/remotefile2.txt .
   ```
   
+---
+  
+### SSH tunneling
+
+**Local-port forwarding**
+
+```bash
+# Login to DAV node and forward 8888 to access Jupyter notebooks from local browser
+ssh -L 8890:localhost:8890 ed1
+```
+
+*Forward port 8890 on local machine to port 8890 on `ed1` (`localhost`).* After
+successful connection, requests on port 8890 on local machine will behave as if
+you executed them on DAV node (via FastX for example**.
+
+Another example:
+
+```bash
+# At your laptop's command prompt
+ssh -L 8890:r6i1n14:8890 el1
+```
+
+Forward port 8890 on your laptop to compute node's port (assuming you have an
+allocation) via `el1`. 
+
+**Remote-port forwarding**
+
+```bash
+# In a job script or from Eagle (login, dav, compute node) command prompt
+ssh -NTf -R 8888:localhost:8888 ${IP_ADDRESS_OF_LAPTOP}
+```
+
+- *Listen on port 8888 on the laptop and forward requests from that port to 8888
+  on the local login, dav, or compute node.* With key-based authentication,
+  useful for adding in `sbatch` submission scripts.
+
+- For remote-port forwarding, we are only interested in forwarding ports and
+  don't want to create a session and hold up the terminal/shell. The flags
+  `-NTf` disables remote command execution, disables pseudo-TTY allocation and
+  tells SSH to background itself after a successful connection. Don't use `-f`
+  flag if you don't have key-based authentication and need to enter a password.
+
+Another example:
+
+```bash
+# At your laptop's command prompt
+ssh -R 8022:cori.nersc.gov:22 ed1.hpc.nrel.gov
+
+# On ed1 command prompt
+ssh -p 8022 localhost # Login to NERSC Cori
+```
+
 ## Session management -- tmux/screen
 
 - Use [tmux](https://github.com/tmux/tmux) or
@@ -511,6 +567,32 @@ Host ed4
   # When using iTerm2 on OS X
   tmux -u -CC new -A -s hfm
   ```
+ 
+- Useful commands
+
+  - `tmux new` -- Create a new session; `-s <name>` provides a unique name for
+    the session for future reference (detach/reattach etc.); `-A` forces `new`
+    to behave like `attach` if there is already a session with the name
+    provided.
+  
+  - `tmux ls` -- List current `tmux` sessions
+  
+     ```bash
+     eagle$ tmux ls
+     wind: 3 windows (created Thu May 23 08:09:09 2019) [80x48] (attached)
+     ```
+     
+  - `tmux lscm` -- List available commands
+  
+  - `tmux attach` -- Attach to a session, must exist or error
+  
+- Useful options
+
+  - `-u` -- Force `UTF-8` support, useful for `vim`/`emacs` in terminal mode.
+  
+  - `-C` -- Start `tmux` in control mode, `-CC` disables echo. Useful with Mac
+    OS X `iTerm2` application, where `tmux` windows behave like `iTerm2` tabs
+    and you can interact with `iTerm2` commands.
   
 - Suggested options in `~/.tmux.conf`
 
@@ -522,6 +604,13 @@ Host ed4
   set -g default-terminal "screen-256color"
   ```
   
-  
+- Other useful options
 
+```bash
+# Replace Ctrl+b with Ctrl+a (to behave like screen)
+unbind C-b
+bind C-a send-prefix
 
+# Start window numbering from 1 instead of 0, so that <prefix>-1 jumps to first window 
+set -g base-index 1
+```
