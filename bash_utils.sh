@@ -27,6 +27,7 @@ hpacf_modules ()
     fi
 
     # Load HPACF modules
+    module use ${hpacf_modules_dir}/binaries/${moddate}
     module use ${hpacf_modules_dir}/compilers/${moddate}
     module use ${hpacf_modules_dir}/utilities/${moddate}
     module use ${hpacf_modules_dir}/software/${moddate}/${compiler}*
