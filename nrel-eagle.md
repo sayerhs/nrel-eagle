@@ -337,6 +337,9 @@ wait
 
 # Pass a unique ID to launch the appropriate case
 ./my_python_script.py ${SLURM_ARRAY_TASK_ID}
+
+# If case parameters are stored in a text file
+./my_executable $(sed -n "${SLURM_ARRAY_TASK_ID}p" case_parameters.txt)
 ```
 
 **Example**
