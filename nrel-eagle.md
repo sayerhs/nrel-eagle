@@ -604,13 +604,13 @@ ssh -p 8022 localhost # Login to NERSC Cori
   set -g default-terminal "screen-256color"
   ```
   
-- Other useful options
-
-```bash
-# Replace Ctrl+b with Ctrl+a (to behave like screen)
-unbind C-b
-bind C-a send-prefix
-
-# Start window numbering from 1 instead of 0, so that <prefix>-1 jumps to first window 
-set -g base-index 1
-```
+  - Other useful options
+  
+    ```bash
+    # Replace Ctrl+b with Ctrl+a (to behave like screen)
+    unbind C-b
+    bind C-a send-prefix
+    
+    # Start window numbering from 1 instead of 0, so that <prefix>-1 jumps to first window 
+    set -g base-index 1
+    ```
