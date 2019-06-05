@@ -47,7 +47,9 @@ on the system.
 ### sinfo - List free/allocated nodes
 
 Use [sinfo](https://slurm.schedmd.com/sinfo.html) to list nodes and partition
-information. You can pass a formatting string to summarize the information.
+information. Alternately, use `shownodes` provided by NREL HPC admins.
+
+You can pass a formatting string to summarize the information.
 
 ```bash
 eagle$ sinfo -o '%24P %.5a  %.12l  %.16F'
