@@ -18,6 +18,11 @@ hpacf_modules ()
     local moddate=${2:-modules}
     local hpacf_modules_dir=/nopt/nrel/ecom/hpacf
 
+    local compiler_arg=gcc-7.4.0
+    if [ "${compiler}" = "intel" ] ; then
+        compiler_arg=intel-18.0.4
+    fi
+
     # Remove existing modules
     module purge
 
